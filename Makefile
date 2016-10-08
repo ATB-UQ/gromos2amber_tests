@@ -101,4 +101,4 @@ temp/%.amber.yml : temp/%.amber.energy
 
 .PHONY : clean
 clean :
-	rm -r temp gromos_format.py
+	rm -r temp gromos_format.py *.pyc
