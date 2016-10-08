@@ -43,25 +43,28 @@ test : $(PRMTOPS) $(AENERGY) $(TRES) $(YAML) $(COMPARE) $(IMDS)
 temp :
 	mkdir -p temp
 
-temp/% : % | temp
+temp/%.top : gromos_top/%.top | temp
 	cp $< $@ 
 
-temp/%_vacuum.amber.in : vacuum.amber.in
+temp/%.cnf : gromos_cnf/%.cnf | temp
+	cp $< $@ 
+
+temp/%_vacuum.amber.in : vacuum.amber.in | temp
 	cp $< $@
 
-temp/%_liquid.amber.in : liquid.amber.in
+temp/%_liquid.amber.in : liquid.amber.in | temp
 	cp $< $@
 
-temp/%_bilayer.amber.in : bilayer.amber.in
+temp/%_bilayer.amber.in : bilayer.amber.in | temp
 	cp $< $@
 
-temp/%_vacuum.gromos.imd : vacuum.gromos.imd %_vacuum.gromos.cnf
+temp/%_vacuum.gromos.imd : vacuum.gromos.imd %_vacuum.gromos.cnf | temp
 	./make_imd $(word 2,$^) 3 < $< > $@
 
-temp/%_liquid.gromos.imd : liquid.gromos.imd %_liquid.gromos.cnf
+temp/%_liquid.gromos.imd : liquid.gromos.imd %_liquid.gromos.cnf | temp
 	./make_imd $(word 2,$^) 3 < $< > $@
 
-temp/%_bilayer.gromos.imd : bilayer.gromos.imd %_bilayer.gromos.cnf
+temp/%_bilayer.gromos.imd : bilayer.gromos.imd %_bilayer.gromos.cnf | temp
 	./make_imd $(word 2,$^) 3 < $< > $@
 
 temp/%.amber.prmtop : $(GROMOS2AMBER) temp/%.gromos.top temp/%.gromos.cnf
