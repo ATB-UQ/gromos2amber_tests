@@ -1,3 +1,7 @@
 gromos_format.py
 *.pyc
 temp
+amber_energy
+amber_inpcrd
+amber_prmtop
+gromos_energy
