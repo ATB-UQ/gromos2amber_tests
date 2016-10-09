@@ -57,8 +57,10 @@ dirs :
 
 amber_prmtop/%.prmtop : $(GROMOS2AMBER) \
     gromos_top/%.top gromos_cnf/%.cnf | dirs
-	./$< $(word 2,$^) $(word 3,$^) \
-		$@ amber_inpcrd/$*.inpcrd
+	./$< \
+	    --config_in $(word 3,$^) \
+	    --config_out amber_inpcrd/$*.inpcrd \
+	    < $(word 2,$^) > $@
 
 # Fails if prmtops differ from baseline version
 amber_prmtop_diff/%.prmtop.diff : \
