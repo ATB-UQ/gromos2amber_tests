@@ -26,8 +26,14 @@ TEST_CASES := \
     34011_ua_H2O_vacuum \
     DLPC_H2O_512_bilayer \
     DLPC_noH2O_512_bilayer
- 
+
+# The earliest version that should give idential prmtop and inpcrd files
+BASELINE_VERSION := 0.1.0
+
 PRMTOPS := $(foreach X,$(TEST_CASES),amber_prmtop/$X.prmtop)
+PRMTOP_DIFFS := $(foreach X,$(TEST_CASES),amber_prmtop_diff/$X.prmtop.diff)
+INPCRDS := $(foreach X,$(TEST_CASES),amber_inpcrd/$X.inpcrd)
+INPCRD_DIFFS := $(foreach X,$(TEST_CASES),amber_inpcrd_diff/$X.inpcrd.diff)
 AENERGY := $(foreach X,$(TEST_CASES),amber_energy/$X.energy)
 TRES := $(foreach X,$(TEST_CASES),gromos_energy/$X.tre)
 IMDS := $(foreach X,$(TEST_CASES),temp/$X.imd)
@@ -37,13 +43,35 @@ COMPARE := $(foreach X,$(TEST_CASES),$X_compare)
 GROMOS2AMBER := ../gromos2amber
 
 .PHONY : test
-test : $(PRMTOPS) $(AENERGY) $(TRES) $(YAML) $(COMPARE) $(IMDS)
+test : $(PRMTOPS) $(PRMTOP_DIFFS) $(INPCRDS) $(INPCRD_DIFFS) 
 
-DIRS := temp amber_prmtop amber_inpcrd amber_energy gromos_energy
+.PHONY : validate
+validate : $(PRMTOPS) $(AENERGY) $(TRES) $(YAML) $(COMPARE) $(IMDS)
+
+DIRS := temp amber_prmtop amber_inpcrd \
+    amber_energy gromos_energy amber_prmtop_diff amber_inpcrd_diff
 
 .PHONY : dirs
 dirs :
 	mkdir -p $(DIRS)
+
+amber_prmtop/%.prmtop : $(GROMOS2AMBER) \
+    gromos_top/%.top gromos_cnf/%.cnf | dirs
+	./$< $(word 2,$^) $(word 3,$^) \
+		$@ amber_inpcrd/$*.inpcrd
+
+# Fails if prmtops differ from baseline version
+amber_prmtop_diff/%.prmtop.diff : \
+    amber_prmtop/%.prmtop amber_prmtop_v$(BASELINE_VERSION)/%.prmtop
+	diff $< $(word 2,$^) > $@
+
+amber_inpcrd_diff/%.inpcrd.diff : \
+    amber_inpcrd/%.inpcrd amber_inpcrd_v$(BASELINE_VERSION)/%.inpcrd
+	diff $< $(word 2,$^) > $@
+
+# dummy recipe, this target is created along with the prmtop
+amber_inpcrd/%.inpcrd : amber_prmtop/%.prmtop
+	touch $@
 
 temp/%_vacuum.in : vacuum.amber.in | dirs
 	cp $< $@
@@ -62,11 +90,6 @@ temp/%_liquid.imd : liquid.gromos.imd gromos_cnf/%_liquid.cnf | dirs
 
 temp/%_bilayer.imd : bilayer.gromos.imd gromos_cnf/%_bilayer.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
-
-amber_prmtop/%.prmtop : $(GROMOS2AMBER) \
-    gromos_top/%.top gromos_cnf/%.cnf | dirs
-	./$< $(word 2,$^) $(word 3,$^) \
-		$@ amber_inpcrd/$*.inpcrd
 
 amber_energy/%.energy: temp/%.in amber_prmtop/%.prmtop amber_inpcrd/%.inpcrd
 	sander -O -i $< \

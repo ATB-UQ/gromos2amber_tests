@@ -4,4 +4,6 @@ temp
 amber_energy
 amber_inpcrd
 amber_prmtop
+amber_inpcrd_diff
+amber_prmtop_diff
 gromos_energy
