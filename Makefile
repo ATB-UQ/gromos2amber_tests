@@ -54,17 +54,17 @@ temp/%_liquid.in : liquid.amber.in | dirs
 temp/%_bilayer.in : bilayer.amber.in | dirs
 	cp $< $@
 
-temp/%_vacuum.imd : vacuum.gromos.imd gromos_cnf/%_vacuum.gromos.cnf | dirs
+temp/%_vacuum.imd : vacuum.gromos.imd gromos_cnf/%_vacuum.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
 
-temp/%_liquid.imd : liquid.gromos.imd gromos_cnf/%_liquid.gromos.cnf | dirs
+temp/%_liquid.imd : liquid.gromos.imd gromos_cnf/%_liquid.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
 
-temp/%_bilayer.imd : bilayer.gromos.imd gromos_cnf/%_bilayer.gromos.cnf | dirs
+temp/%_bilayer.imd : bilayer.gromos.imd gromos_cnf/%_bilayer.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
 
 amber_prmtop/%.prmtop : $(GROMOS2AMBER) \
-    gromos_top/%.gromos.top gromos_cnf/%.gromos.cnf | dirs
+    gromos_top/%.top gromos_cnf/%.cnf | dirs
 	./$< $(word 2,$^) $(word 3,$^) \
 		$@ amber_inpcrd/$*.inpcrd
 
@@ -73,12 +73,12 @@ amber_energy/%.energy: temp/%.in amber_prmtop/%.prmtop amber_inpcrd/%.inpcrd
 	    -o temp/$*.amber.log \
 	    -p $(word 2,$^) \
 	    -c $(word 3,$^) \
-	    -r temp/$*.rstrt -inf \
-	    -x temp/$*.mdcrd -inf \
-	    temp/$*.mdinfo -e $@
+	    -r temp/$*.rstrt \
+	    -x temp/$*.mdcrd \
+	    -inf temp/$*.mdinfo -e $@
 
 gromos_energy/%.tre : temp/%.imd \
-    gromos_top/%.gromos.top gromos_cnf/%.gromos.cnf
+    gromos_top/%.top gromos_cnf/%.cnf
 	md \
 	    \@input $< \
 	    \@topo $(word 2,$^) \
