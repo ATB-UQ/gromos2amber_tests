@@ -41,9 +41,11 @@ YAML := $(foreach X,$(TEST_CASES),gromos_energy/$X.yml) \
     $(foreach X,$(TEST_CASES),amber_energy/$X.yml)
 COMPARE := $(foreach X,$(TEST_CASES),$X_compare)
 GROMOS2AMBER := ../gromos2amber
+SOLVFLAG_TEST := DLPC_H2O_512_bilayer
 
 .PHONY : test
-test : $(PRMTOPS) $(PRMTOP_DIFFS) $(INPCRDS) $(INPCRD_DIFFS) 
+test : $(PRMTOPS) $(PRMTOP_DIFFS) $(INPCRDS) $(INPCRD_DIFFS) \
+    temp/$(SOLVFLAG_TEST)_solvent_flag.prmtop
 
 .PHONY : validate
 validate : $(PRMTOPS) $(AENERGY) $(TRES) $(YAML) $(COMPARE) $(IMDS)
@@ -61,6 +63,13 @@ amber_prmtop/%.prmtop : $(GROMOS2AMBER) \
 	    --config_in $(word 3,$^) \
 	    --config_out amber_inpcrd/$*.inpcrd \
 	    < $(word 2,$^) > $@
+
+temp/$(SOLVFLAG_TEST)_solvent_flag.prmtop : \
+    $(GROMOS2AMBER) \
+    amber_prmtop/$(SOLVFLAG_TEST).prmtop \
+    gromos_top/$(SOLVFLAG_TEST).top
+	$< --num_solvent 16632 < $(word 3,$^) > $@
+	diff -q $@ $(word 2,$^)
 
 # Fails if prmtops differ from baseline version
 amber_prmtop_diff/%.prmtop.diff : \
