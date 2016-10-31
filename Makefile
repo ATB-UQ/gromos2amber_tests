@@ -30,6 +30,7 @@ TEST_CASES := \
     54a7_1qqv \
     54a7_1tua \
     54a7_1ucs \
+    54a7_1zvg \
     DLPC_H2O_512_bilayer \
     DLPC_noH2O_512_bilayer
 
