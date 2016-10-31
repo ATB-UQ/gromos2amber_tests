@@ -24,6 +24,11 @@ TEST_CASES := \
     33786_ua_H2O_vacuum \
     820_ua_H2O_vacuum \
     34011_ua_H2O_vacuum \
+    54A7_1a19_md_rep_3 \
+    54a7_1ng6 \
+    54a7_1qqv \
+    54a7_1tua \
+    54a7_1ucs \
     DLPC_H2O_512_bilayer \
     DLPC_noH2O_512_bilayer
 
@@ -90,7 +95,7 @@ temp/%_vacuum.in : vacuum.amber.in | dirs
 temp/%_liquid.in : liquid.amber.in | dirs
 	cp $< $@
 
-temp/%_bilayer.in : bilayer.amber.in | dirs
+temp/%.in : standard.amber.in | dirs
 	cp $< $@
 
 temp/%_vacuum.imd : vacuum.gromos.imd gromos_cnf/%_vacuum.cnf | dirs
@@ -99,7 +104,7 @@ temp/%_vacuum.imd : vacuum.gromos.imd gromos_cnf/%_vacuum.cnf | dirs
 temp/%_liquid.imd : liquid.gromos.imd gromos_cnf/%_liquid.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
 
-temp/%_bilayer.imd : bilayer.gromos.imd gromos_cnf/%_bilayer.cnf | dirs
+temp/%.imd : standard.gromos.imd gromos_cnf/%.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
 
 amber_energy/%.energy: temp/%.in amber_prmtop/%.prmtop amber_inpcrd/%.inpcrd
