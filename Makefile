@@ -2,6 +2,7 @@
 TEST_CASES := \
     1177_H2O_vacuum 1177_H2O_liquid \
     3798_H2O_vacuum 3798_H2O_liquid \
+    1907_aa_H2O_vacuum \
     32084_aa_H2O_vacuum \
     34231_aa_H2O_vacuum \
     32785_aa_H2O_vacuum \
