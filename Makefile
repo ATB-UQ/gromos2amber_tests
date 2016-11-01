@@ -41,11 +41,11 @@ PRMTOPS := $(foreach X,$(TEST_CASES),amber_prmtop/$X.prmtop)
 PRMTOP_DIFFS := $(foreach X,$(TEST_CASES),amber_prmtop_diff/$X.prmtop.diff)
 INPCRDS := $(foreach X,$(TEST_CASES),amber_inpcrd/$X.inpcrd)
 INPCRD_DIFFS := $(foreach X,$(TEST_CASES),amber_inpcrd_diff/$X.inpcrd.diff)
-AENERGY := $(foreach X,$(TEST_CASES),amber_energy/$X.energy)
+AENERGY := $(foreach X,$(TEST_CASES),sander_energy/$X.energy)
 TRES := $(foreach X,$(TEST_CASES),gromos_energy/$X.tre)
 IMDS := $(foreach X,$(TEST_CASES),temp/$X.imd)
 YAML := $(foreach X,$(TEST_CASES),gromos_energy/$X.yml) \
-    $(foreach X,$(TEST_CASES),amber_energy/$X.yml)
+    $(foreach X,$(TEST_CASES),sander_energy/$X.yml)
 COMPARE := $(foreach X,$(TEST_CASES),$X_compare)
 GROMOS2AMBER := ../gromos2amber
 SOLVFLAG_TEST := DLPC_H2O_512_bilayer
@@ -58,7 +58,7 @@ test : $(PRMTOPS) $(PRMTOP_DIFFS) $(INPCRDS) $(INPCRD_DIFFS) \
 validate : $(PRMTOPS) $(AENERGY) $(TRES) $(YAML) $(COMPARE) $(IMDS)
 
 DIRS := temp amber_prmtop amber_inpcrd \
-    amber_energy gromos_energy amber_prmtop_diff amber_inpcrd_diff
+    sander_energy gromos_energy amber_prmtop_diff amber_inpcrd_diff
 
 .PHONY : dirs
 dirs :
@@ -109,9 +109,9 @@ temp/%_liquid.imd : liquid.gromos.imd gromos_cnf/%_liquid.cnf | dirs
 temp/%.imd : standard.gromos.imd gromos_cnf/%.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
 
-amber_energy/%.energy: temp/%.sander.in amber_prmtop/%.prmtop amber_inpcrd/%.inpcrd
+sander_energy/%.energy: temp/%.sander.in amber_prmtop/%.prmtop amber_inpcrd/%.inpcrd
 	sander -O -i $< \
-	    -o temp/$*.amber.log \
+	    -o temp/$*.sander.log \
 	    -p $(word 2,$^) \
 	    -c $(word 3,$^) \
 	    -r temp/$*.rstrt \
@@ -134,10 +134,10 @@ gromos_format.py : ../lib/gromos_format.py
 gromos_energy/%.yml : gromos_energy/%.tre gromos_format.py
 	./parse_gromos_energy < $< > $@
 
-amber_energy/%.yml : amber_energy/%.energy
+sander_energy/%.yml : sander_energy/%.energy
 	./parse_amber_energy < $< > $@
 
-%_compare : amber_energy/%.yml gromos_energy/%.yml
+%_compare : sander_energy/%.yml gromos_energy/%.yml
 	echo $* && \
 	    ./compare_energies $< $(word 2,$^)
 

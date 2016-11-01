@@ -1,7 +1,7 @@
 gromos_format.py
 *.pyc
 temp
-amber_energy
+sander_energy
 amber_inpcrd
 amber_prmtop
 amber_inpcrd_diff
