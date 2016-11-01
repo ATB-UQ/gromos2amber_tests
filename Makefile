@@ -91,13 +91,13 @@ amber_inpcrd_diff/%.inpcrd.diff : \
 amber_inpcrd/%.inpcrd : amber_prmtop/%.prmtop
 	touch $@
 
-temp/%_vacuum.in : vacuum.amber.in | dirs
+temp/%_vacuum.sander.in : vacuum.sander.in | dirs
 	cp $< $@
 
-temp/%_liquid.in : liquid.amber.in | dirs
+temp/%_liquid.sander.in : liquid.sander.in | dirs
 	cp $< $@
 
-temp/%.in : standard.amber.in | dirs
+temp/%.sander.in : standard.sander.in | dirs
 	cp $< $@
 
 temp/%_vacuum.imd : vacuum.gromos.imd gromos_cnf/%_vacuum.cnf | dirs
@@ -109,7 +109,7 @@ temp/%_liquid.imd : liquid.gromos.imd gromos_cnf/%_liquid.cnf | dirs
 temp/%.imd : standard.gromos.imd gromos_cnf/%.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
 
-amber_energy/%.energy: temp/%.in amber_prmtop/%.prmtop amber_inpcrd/%.inpcrd
+amber_energy/%.energy: temp/%.sander.in amber_prmtop/%.prmtop amber_inpcrd/%.inpcrd
 	sander -O -i $< \
 	    -o temp/$*.amber.log \
 	    -p $(word 2,$^) \
