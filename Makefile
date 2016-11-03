@@ -14,6 +14,8 @@ TEST_CASES := \
     33786_aa_H2O_vacuum \
     820_aa_H2O_vacuum \
     34011_aa_H2O_vacuum \
+    764_aa_H2O_vacuum \
+    32177_aa_H2O_vacuum \
     32084_ua_H2O_vacuum \
     34231_ua_H2O_vacuum \
     32785_ua_H2O_vacuum \
@@ -25,6 +27,8 @@ TEST_CASES := \
     33786_ua_H2O_vacuum \
     820_ua_H2O_vacuum \
     34011_ua_H2O_vacuum \
+    764_ua_H2O_vacuum \
+    32177_ua_H2O_vacuum \
     54A7_1a19_md_rep_3 \
     54a7_1ng6 \
     54a7_1qqv \
@@ -45,7 +49,8 @@ AENERGY := $(foreach X,$(TEST_CASES),sander_energy/$X.energy)
 TRES := $(foreach X,$(TEST_CASES),gromos_energy/$X.tre)
 IMDS := $(foreach X,$(TEST_CASES),temp/$X.imd)
 YAML := $(foreach X,$(TEST_CASES),gromos_energy/$X.yml) \
-    $(foreach X,$(TEST_CASES),sander_energy/$X.yml)
+    $(foreach X,$(TEST_CASES),sander_energy/$X.yml) \
+    $(foreach X,$(TEST_CASES),pmemd_energy/$X.yml)
 COMPARE := $(foreach X,$(TEST_CASES),$X_compare)
 GROMOS2AMBER := ../gromos2amber
 SOLVFLAG_TEST := DLPC_H2O_512_bilayer
@@ -58,7 +63,8 @@ test : $(PRMTOPS) $(PRMTOP_DIFFS) $(INPCRDS) $(INPCRD_DIFFS) \
 validate : $(PRMTOPS) $(AENERGY) $(TRES) $(YAML) $(COMPARE) $(IMDS)
 
 DIRS := temp amber_prmtop amber_inpcrd \
-    sander_energy gromos_energy amber_prmtop_diff amber_inpcrd_diff
+    sander_energy gromos_energy amber_prmtop_diff amber_inpcrd_diff \
+    pmemd_energy
 
 .PHONY : dirs
 dirs :
@@ -100,6 +106,15 @@ temp/%_liquid.sander.in : liquid.sander.in | dirs
 temp/%.sander.in : standard.sander.in | dirs
 	cp $< $@
 
+temp/%_vacuum.pmemd.in : vacuum.pmemd.in | dirs
+	cp $< $@
+
+temp/%_liquid.pmemd.in : liquid.pmemd.in | dirs
+	cp $< $@
+
+temp/%.pmemd.in : standard.pmemd.in | dirs
+	cp $< $@
+
 temp/%_vacuum.imd : vacuum.gromos.imd gromos_cnf/%_vacuum.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
 
@@ -114,9 +129,34 @@ sander_energy/%.energy: temp/%.sander.in amber_prmtop/%.prmtop amber_inpcrd/%.in
 	    -o temp/$*.sander.log \
 	    -p $(word 2,$^) \
 	    -c $(word 3,$^) \
-	    -r temp/$*.rstrt \
-	    -x temp/$*.mdcrd \
-	    -inf temp/$*.mdinfo -e $@
+	    -r temp/$*.sander.rstrt \
+	    -x temp/$*.sander.mdcrd \
+	    -frc temp/$*.sander.mdfrc \
+	    -inf temp/$*.sander.mdinfo -e $@
+
+pmemd_energy/%vacuum.energy: \
+    temp/%vacuum.pmemd.in amber_prmtop/%vacuum.prmtop \
+    amber_inpcrd/%vacuum.inpcrd
+	head -n-1 $(word 3,$^) > temp/$*vacuum.inpcrd
+	echo '   100.00000   100.00000   100.00000' >> temp/$*vacuum.inpcrd
+	pmemd -O -i $< \
+	    -o temp/$*vacuum.pmemd.log \
+	    -p $(word 2,$^) \
+	    -c temp/$*vacuum.inpcrd \
+	    -r temp/$*vacuum.pmemd.rstrt \
+	    -x temp/$*vacuum.pmemd.mdcrd \
+	    -frc temp/$*vacuum.pmemd.mdfrc \
+	    -inf temp/$*vacuum.pmemd.mdinfo -e $@
+
+pmemd_energy/%.energy: temp/%.pmemd.in amber_prmtop/%.prmtop amber_inpcrd/%.inpcrd
+	pmemd -O -i $< \
+	    -o temp/$*.pmemd.log \
+	    -p $(word 2,$^) \
+	    -c $(word 3,$^) \
+	    -r temp/$*.pmemd.rstrt \
+	    -x temp/$*.pmemd.mdcrd \
+	    -frc temp/$*.pmemd.mdfrc \
+	    -inf temp/$*.pmemd.mdinfo -e $@
 
 gromos_energy/%.tre : temp/%.imd \
     gromos_top/%.top gromos_cnf/%.cnf
@@ -137,9 +177,12 @@ gromos_energy/%.yml : gromos_energy/%.tre gromos_format.py
 sander_energy/%.yml : sander_energy/%.energy
 	./parse_amber_energy < $< > $@
 
-%_compare : sander_energy/%.yml gromos_energy/%.yml
+pmemd_energy/%.yml : pmemd_energy/%.energy
+	./parse_amber_energy < $< > $@
+
+%_compare : pmemd_energy/%.yml sander_energy/%.yml gromos_energy/%.yml
 	echo $* && \
-	    ./compare_energies $< $(word 2,$^)
+	    ./compare_energies $^
 
 
 .PHONY : clean
