@@ -52,7 +52,7 @@ YAML := $(foreach X,$(TEST_CASES),gromos_energy/$X.yml) \
     $(foreach X,$(TEST_CASES),sander_energy/$X.yml) \
     $(foreach X,$(TEST_CASES),pmemd_energy/$X.yml)
 COMPARE := $(foreach X,$(TEST_CASES),$X_compare)
-GROMOS2AMBER := ../gromos2amber
+GROMOS2AMBER := ../bin/gromos2amber
 SOLVFLAG_TEST := DLPC_H2O_512_bilayer
 
 .PHONY : test
