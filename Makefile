@@ -168,9 +168,6 @@ gromos_energy/%.tre : temp/%.imd \
 	    \@trc  temp/$*.trc \
 	    \@tre  $@ > temp/$*.gromos.log
 
-gromos_format.py : ../lib/gromos_format.py
-	cp $< $@
-
 gromos_energy/%.yml : gromos_energy/%.tre gromos_format.py
 	./parse_gromos_energy < $< > $@
 
@@ -187,4 +184,4 @@ pmemd_energy/%.yml : pmemd_energy/%.energy
 
 .PHONY : clean
 clean :
-	rm -rf $(DIRS) gromos_format.py *.pyc
+	rm -rf $(DIRS) *.pyc
