@@ -1,5 +1,6 @@
 
 TEST_CASES := \
+    NW_3PI0_monoclinic \
     1177_H2O_vacuum 1177_H2O_liquid \
     3798_H2O_vacuum 3798_H2O_liquid \
     1907_aa_H2O_vacuum \
@@ -39,7 +40,7 @@ TEST_CASES := \
     DLPC_noH2O_512_bilayer
 
 # The earliest version that should give idential prmtop and inpcrd files
-BASELINE_VERSION := 1
+BASELINE_VERSION := 1.1
 
 PRMTOPS := $(foreach X,$(TEST_CASES),amber_prmtop/$X.prmtop)
 PRMTOP_DIFFS := $(foreach X,$(TEST_CASES),amber_prmtop_diff/$X.prmtop.diff)
@@ -119,6 +120,9 @@ temp/%_vacuum.imd : vacuum.gromos.imd gromos_cnf/%_vacuum.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
 
 temp/%_liquid.imd : liquid.gromos.imd gromos_cnf/%_liquid.cnf | dirs
+	./make_imd $(word 2,$^) 3 < $< > $@
+
+temp/%_monoclinic.imd : monoclinic.gromos.imd gromos_cnf/%_monoclinic.cnf | dirs
 	./make_imd $(word 2,$^) 3 < $< > $@
 
 temp/%.imd : standard.gromos.imd gromos_cnf/%.cnf | dirs
