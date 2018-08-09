@@ -40,7 +40,7 @@ TEST_CASES := \
     DLPC_noH2O_512_bilayer
 
 # The earliest version that should give idential prmtop and inpcrd files
-BASELINE_VERSION := 1.1
+BASELINE_VERSION := 1.2
 
 PRMTOPS := $(foreach X,$(TEST_CASES),amber_prmtop/$X.prmtop)
 PRMTOP_DIFFS := $(foreach X,$(TEST_CASES),amber_prmtop_diff/$X.prmtop.diff)
