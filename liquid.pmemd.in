@@ -8,4 +8,5 @@ Calculate energies only
  &end
  &ewald
  vdwmeth=0,
+ use_pme=0
  &end
